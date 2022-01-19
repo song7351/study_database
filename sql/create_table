@@ -1,0 +1,71 @@
+use demo;
+show databases;
+create database mydb;
+use mydb;  
+
+-- table 지우기
+-- drop table 이름;
+
+-- table 생성하기
+create table member(
+	-- 필드명		데이터타입 	제약조건 		기본값check
+    num int  auto_increment primary key,
+    username varchar(30) not null,
+    tel varchar(15) not null,
+    email varchar(50),
+    birth date,
+    gender char(1) default 'M',
+    writedate datetime default now()
+);
+show tables;
+desc member;
+
+use mydb;
+-- table 생성하기(2)
+create table USERTBL(
+	-- 필드명		데이터타입 	제약조건 		기본값check
+	userID varchar(30) primary key,
+    userName varchar(30) not null,
+    birth int not null,
+    local varchar(10) not null,
+    hireDate date,
+    mobile varchar(3), -- 010
+    mobile2 varchar(10), -- -1234-5678
+    height int,
+    writedate datetime
+);
+show tables;
+desc usertbl;
+
+-- table 생성하기(3)
+create table prodtbl(
+	-- 필드명		데이터타입 	제약조건 		기본값check
+	productName varchar(50) primary key,
+    price int default 10,
+    openDate datetime,
+    company varchar(30),
+    stock int default 0
+);
+
+show tables;
+desc prodtbl;
+
+-- table 생성하기(4)
+-- 양수만할때는 integer 써도 괜춘.
+create table buytbl(
+	-- 필드명		데이터타입 	제약조건 		기본값check
+    buyNo int auto_increment primary key,
+    userID varchar(30) not null,
+    -- foreign key(userID)
+    -- references USERTBL(userID) on update cascade,
+    productName varchar(50) not null,
+    -- foreign key(productName)
+    -- references prdtbl(productName) on update cascade,
+    groupNam varchar(30) not null,
+    price int default 0,
+    anount int default 0,
+    buyDate datetime default now()
+    );
+    
+    desc booktbl;
+    
