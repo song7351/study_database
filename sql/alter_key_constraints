@@ -1,0 +1,129 @@
+-- 테이블관리
+
+use demo;
+show tables;
+select*from emp2;
+
+-- ALTER문: 기존에 존재하는 데이터베이스 객체를 다시 정의alter
+
+-- 테이블에 필드를 추가: alter table 이름 add 필드 타입;
+-- emp2테이블에 연락처를 저장 할 필드 추가
+desc emp2;
+alter table emp2 add tel varchar(15);
+
+-- 필드의 크기를 수정하기: alter table 이름 modify 필드 타입;
+-- job을 varchar(20)자리로 바꾸기
+desc emp2;
+alter table emp2 modify job varchar(20);
+
+-- 컬럼명 변경하기: alter table 이름 change 기존 변경 타입;
+-- tel --> mobile로 컬럼명 변경하기
+desc emp2;
+alter table emp2 change tel mobile varchar(20);
+
+-- 필드 삭제하기: alter table 이름 drop column 필드명;
+-- job을 삭제하기 
+desc emp2;
+alter table emp2 drop column job;
+
+-- emp2테이블 지우기
+-- drop table emp2;
+
+select* from emp;
+
+delete from emp where empno in(1111,2222,3333);
+commit;
+
+-- 제약조건 확인하기
+select* from information_schema.table_constraints
+where table_name in ('emp','dept','salgrade');
+
+select*from emp;
+-- unique : 유일한 값일때, 중복데이터 불가
+-- ename을 unique 제약조건 설정
+alter table emp add constraint emp_uq_ename unique(ename);
+insert into emp(empno, ename) values(8888,'smith2');
+-- 에러발생. ename이 유니크라서 중복값을 가질 수 없음.
+insert into emp(empno, ename) values(8888,'smith2');
+
+-- 제약조건 삭제
+alter table emp drop constraint emp_uq_ename;
+-- 정상작동. ename의 유니크가 삭제되서 중복가능
+insert into emp(empno, ename) values(8888,'smith2');
+
+-- check : 특정 데이터만 등록 되도록 제약조건을 설정한다.
+alter table emp add constraint emp_ck_sal check(sal>500 and sal<8000);
+-- 에러발생. check제약조건에서 위반.
+update emp set sal=8500 where ename='smith';
+-- 정상작동. check제약조건 해당.
+update emp set sal=7999 where ename='smith';
+
+-- check : 특정 데이터만 등록 되도록 제약조건을 설정한다.
+-- 에러발생. why? 이미 제약조건에 벗어난 데이터들이 있음.
+alter table emp add constraint emp_ck_comm check(comm in(100,200,300,400));
+
+update emp set comm = 100;
+-- 정상작동. 모든 comm이 100으로 제약조건 해당.
+alter table emp add constraint emp_ck_comm check(comm in(100,200,300,400));
+-- 정상작동. comm=200은 제약조건에 해당.
+update emp set comm = 200 where sal >3000;
+-- 에러방생. comm=500은 제약조건에 위배.
+update emp set comm = 500 where sal <2000;
+
+-- (외래키 설정 85행) emp는 dept 테이블의 deptno를 사용하고있다.
+-- (기본키 설정 78행)dept 테이블의 deptno가 결국 기본키가 되어야함.
+select * from emp;  -- 사원정보 테이블
+select * from dept; -- 부서 테이블
+
+-- primary key 설정
+alter table dept add constraint dept_pk_depno primary key(deptno);
+-- 에러발생. primary key = deptno값이 중복이라서.
+insert into dept values(40, '총무부', '서울');
+-- 정상작동. 기존에 없던 deptno값이라서.
+insert into dept values(50, '총무부', '서울');
+
+-- foreign key 설정
+-- 테이블1 = 외래키 설정할 테이블 이름 //  테이블2 = 외래키 가져올 테이블 이름
+-- 필드1 = 외래키 설정할 필드 이름    //   필드2 = 외래키 해당하는 필드 이름
+-- alter table 테이블1 add constraint 제약조건이름 foreign key (필드1)
+-- references 테이블2(필드2);
+
+-- emp테이블의 deptno는 dept테이블의 deptno를 참조한다.
+alter table emp add constraint emp_fk_deptno foreign key (deptno)
+references dept(deptno);
+
+select*from dept;
+select*from emp;
+-- emp에서 martin (부서 30번)의 부서를 50번으로 이동
+update emp set deptno = 50 where ename = 'martin';
+-- 에러발생. why? dept 테이블의 deptno 값에 35가 없기때문에.
+update emp set deptno = 35 where ename = 'martin';
+
+-- dept 테이블의 deptno 삭제.
+-- 에러발생. why? emp테이블에서 deptno = 20 을 쓰고있기 때문에.
+delete from dept where deptno = 20;
+
+-- 외래키(1)
+-- alter table emp add constraint emp_fk_deptno foreign key (deptno)
+-- references dept(deptno);
+alter table emp drop constraint emp_fk_deptno;
+alter table emp drop constraint emp_ck_comm;
+-- 외래키(2): 외래키(1)과의 차이점: on delete cascade
+-- on delete cascade: 
+alter table emp add constraint emp_fk_deptno foreign key(deptno)
+references dept(deptno) on delete cascade;
+
+-- 103행이랑 비교.
+delete from dept where deptno = 20;
+select*from dept;
+-- deptno = 20을 가지고있던 emp테이블의 모든 값들이 삭제.
+select*from emp order by empno;
+
+select avg(sal) from emp;
+select*from emp where sal>2877.18;
+-- 서브쿼리. 121~122행을 합침. 
+select*from emp where sal>(select avg(sal) from emp);
+
+delete from emp;
+insert into dept values(20,'인사부','경기도');
+select count(empno) from emp;
