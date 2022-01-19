@@ -1,0 +1,51 @@
+show databases;
+use employees;
+desc employees;
+
+select ascii('A'), char(65);
+select concat_ws(',','김','길동','이다');
+SELECT INSERT('가나다라마', 2, 3, '@');
+ -- first_name을 10자리를 출력하는데 빈공간을 * 으로 채움
+select lpad(first_name, 10, '*'), rpad(first_name, 10, '*') from employees;
+
+-- 문자열의 구분 '.'의 2번째까지 print
+select substring_index('abc.def.jak','.',2);
+
+-- first_name을 이용ㅎ해서
+-- 이름을 글자길이의 50%만큼 출력하고 나머지는 '*'으로 출력해라.
+select first_name "이름", char_length(first_name) "이름 길이",
+rpad(substring(first_name,1,char_length(first_name)/2),char_length(first_name),'*') "문제" from employees;
+
+-- 대소문자를 구별한다! 띠용!
+select replace('jack and JACK','JA','bl');
+select replace(replace('jack and JACK','JA','bl'),'ja','bl');
+select replace(replace(first_name,'A','에이'),'a','에이') from employees;
+
+-- initcap은 오라클에만 있는 함수
+select replace(initcap(first_name),'A','에이') from employees;
+
+-- curdate = date , curtime = time , now = sysdate 
+select curdate(), curtime(), now(), sysdate();
+select date(now()), time(sysdate());
+select year(now()), year(curtime());
+
+-- adddate(날짜, 차이), subdate(날짜, 차이)
+select adddate(now(),interval 31 day);
+
+-- datediff(날짜1, 날짜2): 날짜2에서 날짜1까지 몇 일 남았는가?
+-- timediff(날짜/시간, 날짜/시간): 시간이 얼마나 남았는가?alter
+select datediff('2020-1-5', '2022-1-5'); -- 음수가 나옴
+select abs(datediff('2020-1-5', '2022-1-5'));
+
+-- dayofweek (일~토)반환, dayofyear 1년중 몇일이 지났는가?
+select dayofweek(now()), dayofyear(now());
+-- last_day 이번달의 마지막날을 표시, time_to_sec 초로 변환
+select last_day(now()), time_to_sec(now());
+
+-- cast(표현값 AS 데이터형식(길이));
+select cast('2022~01~01' as date);
+-- date_format(표현값, '형식');
+select date_format(now(), '%y%m%d');
+
+show tables;
+select* from salaries;
