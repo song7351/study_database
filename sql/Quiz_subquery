@@ -1,0 +1,126 @@
+use demo;
+select*from emp;
+
+-- 서브쿼리: 쿼리 (쿼리)
+select * from emp where sal>(select avg(sal) from emp);
+-- emp테이블의 급여 jones의 급여보다 많이 받는 사원중 부서가 20번인 사원을 선택하라.
+select sal from emp where ename ='jones';
+select * from emp where sal>(select sal from emp where ename ='jones') && deptno = 20;
+-- manager 업무인 사원의 평균 급여보다 적게 받는 사원을 선택하라.
+select avg(sal) from emp where job = 'manager';
+select*from emp where sal<(select avg(sal) from emp where job = 'manager') order by sal desc;
+-- 예제1) adams 와 같은 업무를 하는 사원이거나 scott와 같은 부서인 사원을 선택하라
+select job from emp where ename = 'adams'; -- clerk
+select deptno from emp where ename = 'scott'; -- 20번
+select ename, hiredate, job, deptno from emp
+where job=(select job from emp where ename = 'adams') ||
+deptno=(select deptno from emp where ename = 'scott');
+
+-- 예제2) 사원번호가 7521인 사원과 업무가 같고 급여가 7934인 사원보다
+-- 많은 사원의 사번, 이름, 업무, 입사일자, 급여를 출력해라
+select job from emp where empno = 7521; -- salesman
+select sal from emp where empno = 7934; -- 1300
+select empno, ename, job, hiredate, sal from emp
+where job = (select job from emp where empno = 7521) &&
+sal> (select sal from emp where empno = 7934);
+
+-- 예제3) 사원테이블에서 사원의 급여가 30번부서의 최소급여보다 많이 받는 부서를 선택하라.
+select deptno, min(sal) from emp group by deptno; -- 30번부서는 950
+select deptno, min(sal) from emp
+group by deptno
+having min(sal)> (select min(sal) from emp where deptno = 30);
+
+-- 예제4) 사원테이블의 사원의 급여가 10번부서의 평균급여보다 많이 받는 업무를 하는 업무별 평균급여를 선택하라.
+select avg(sal) from emp where deptno = 10; -- 10번부서는 2916
+select job, avg(sal) from emp
+group by job
+having avg(sal)>(select avg(sal) from emp where deptno = 10);
+
+-- 다중 행 서브쿼리
+select deptno, max(sal) from emp group by deptno;
+-- 결과값: 5000, 3000, 2850
+-- 결과값이 다중행으로 나옴.
+
+-- 예제5) 부서별 최대 급여랑 같은 급여를 받는 사원은...?
+select ename, job, deptno, sal from emp where sal in (5000,3000,2850);
+select ename, job, deptno, sal from emp
+where sal in (select max(sal) from emp group by deptno);
+-- 예제6) 부서별 최대 급여랑 같은 급여를 받는 사원을 제외하고....?
+select ename, job, deptno, sal from emp
+where sal not in (select max(sal) from emp group by deptno);
+-- 예제7) 업무별로 최대 급여를 받는 사원과 같은 급여를 받는 사원의 사원번호, 이름, 업무, 급여 출력
+select empno, ename, job, sal from emp
+where sal in (select max(sal) from emp group by job);
+select job, max(sal) from emp group by job;
+
+-- any연산자: 서브쿼리 결과값 중 어느 하나의 값이라도 만족이 되면 결과값을 반환
+-- 예제8) 업무가 salesman 사원의 급여보다 많고 부서번호가 20이 아닌 사원을 고르시오
+-- 업무가 salesman 사원의 급여보다 많고: min의 개념
+select * from emp where deptno != 20 and
+-- 에러발생. why? 다중행.
+-- sal> (select sal from emp where job = 'salesman');
+sal> any(select sal from emp where job = 'salesman');
+
+-- 예제9) 사원테이블의 사원중 king이 속한 부서의 사원보다 늦게 입사한 사원의 사원명, 업무,급여,입사일
+select ename, job, sal, hiredate from emp
+where hiredate > any(select hiredate from emp 
+where deptno = (select deptno from emp where ename = 'king'));
+select deptno from emp where ename = 'king'; -- 10
+select hiredate from emp where deptno = 10; -- 3명 (81년6월9일)
+
+-- all연산자: 조건의 전체를 만족해야 참. <---> any: 조건중 하나라도...
+-- 예제10) 20번부서가 아니고 세일즈맨인 부서의 직원 급여보다 많이 받는사람 (max의 개념)
+select* from emp
+where sal> all(select sal from emp where job='salesman')
+and deptno != 20;
+
+-- Exits문:
+-- 별명: 테이블이름 별명 emp e
+select * from emp;
+select * from emp e
+where exists (select empno from emp where e.empno=mgr);
+
+-- emp테이블의 사원중 사원명, 담당업무, 입사일, 급여를 선택하되
+-- scott이 속한 부서의 평균급여보다 많이 받는 사원과
+-- manager업무를 하는 사원을 선택하라.
+-- 단, 사원명을 오름차순으로 정렬하여 출력하라.
+select ename, job, hiredate, sal from emp
+where sal>(select avg(sal) from emp
+where deptno = (select deptno from emp where ename = 'scott'))
+or job = 'manager'
+order by ename;
+
+-- 평균급여 2175
+select avg(sal) from emp
+where deptno = (select deptno from emp where ename = 'scott');
+-- 매니저 3명
+select*from emp where job = 'manager';
+
+-- 다중열 서브쿼리: 필드가 여러개
+-- 다중행 서브쿼리: 조건이 여러개
+
+-- 30번 부서의 보너스를 받는 사원은(급여, 부서코드)?
+select sal, deptno from emp where deptno = 30 and comm is not null;
+select*from emp where (sal, deptno) in (select sal, deptno from emp where deptno = 30 and comm is not null);
+
+-- 업무별로 최소 급여를 받는 사원의 사번, 이름, 업무, 부서번호를 출력하세요.
+-- 단, 업무별로 정렬하세요.
+-- 업무별 최소급여
+select job, min(sal) from emp group by job;
+select empno, ename, job, deptno from emp
+where (job, sal) in (select job, min(sal) from emp group by job)
+order by job;
+
+-- from 절에 서브쿼리문 사용하기
+select * from (select empno, ename, sal, hiredate from emp) e;
+select e.ename, e.sal from (select empno, ename, sal, hiredate from emp) e;
+select e.ename, e.sal from (select empno, ename, sal, hiredate from emp where deptno = 30) e;
+
+-- 사원번호 같은 값이 들어가나 (작동함)
+insert into emp(empno, ename, deptno) values (7788,'abcd',30);
+delete from emp where ename = 'abcd';
+-- 제약조건 설정: epmno를 기본키로.
+alter table emp add constraint emp_pk_empno
+primary key (empno);
+-- 사원번호 같은 값이 들어가나 (작동x)
+insert into emp(empno, ename, deptno) values (7788,'abcd',30);
