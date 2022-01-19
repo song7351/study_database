@@ -1,0 +1,42 @@
+-- 1번 EMPLOYEES테이블의 레코드 중 사원번호, 사원명, 입사일, 성별을 선택하라.
+select emp_no "사원번호", first_name "사원명", hire_date"입사일", gender"성별" from employees;
+
+-- 2번 EMPLOYEES테이블의 레코드 중 사원번호, 사원명, 입사일을 선택하라. (단, 사원명을 오름차순으로 정렬하여 선택)
+select emp_no"사원번호",first_name"사원명",hire_date"입사일" from employees order by first_name;
+
+-- 3번 EMPLOYEES테이블의 레코드 중 6월, 12월에 입사한 사원의 사원번호, 사원명, 입사일을 선택하라.
+select emp_no"사원번호",first_name"사원명",hire_date"입사일" from employees 
+where hire_date like '_____06%' || hire_date like '_____12%';
+
+-- 4번 EMPLOYEES테이블의 레코드 중 사원명에 ‘A’로 시작하고 생일이 1950년~1959년 사이인 사원을 나이가 많은 순으로 선택하라. 
+select*from employees where first_name like 'a%' &&
+ birth_date between '1950-01-01' and '1959-12-31' order by birth_date;
+ 
+-- 5번 EMPLOYEES테이블의 레코드 중 1960년도에 태어난 남자사원을 선택하라.
+select*from employees where gender = 'm' &&
+birth_date between '1960-01-01' and '1960-12-31';
+
+-- 6번 EMPLOYEES테이블의 사원 중 1월에 태어난 여자 사원을 이름을 오름차순으로 선택하라
+select*from employees where gender = 'f' &&
+birth_date like '_____01%' order by first_name;
+
+-- 7번 EMP테이블의 사원 입사일이 1990-01-01이후인 사원과 이름에 B가 포함된 사원을 입사일 기준
+-- 내림차순으로 정렬하여 선택하라. 
+select*from employees where hire_date >= '1990-01-01' ||
+first_name like '%b%' order by hire_date desc;
+
+-- 8번 현재 데이터베이스의 테이블 목록을 확인하는 쿼리문을 작성하라.
+show tables;
+
+-- 9번 EMPLOYEES테이블의 사원 중 사원번호, 이름, 생년월일, 입사일을 이름은 오름차순, 사원번호는 
+-- 내림차순으로 정렬하여 선택하라
+select emp_no "사원번호", first_name "이름", birth_date "생년월일" ,hire_date"입사일" 
+from employees
+order by first_name, emp_no desc;
+
+-- 10번 EMPLOYEES테이블의 구조를 확인하는 쿼리문을 작성하라.
+desc employees;
+
+-- 11번 현재 계정의 데이터베이스의 목록을 확인하는 쿼리문을 작성하라.
+show databases;
+
