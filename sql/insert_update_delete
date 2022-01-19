@@ -1,0 +1,93 @@
+use demo;
+show tables;
+select* from emp;
+desc emp;
+
+-- insert문: 레코드 추가
+-- insert into 테이블이름 valuse (1, 2, 3,···)  //모든 정보를 알고있을때.
+insert into emp values (7777,'hong','총무부',7369,now(),4000,100,40);
+-- insert into 테이블이름(필드이름) valuse(필드값)
+insert into emp(empno,ename) values(7778,'park');
+-- 에러 발생. why? desc emp; 확인해면 empno is vot null 이기때문에 에러 발생.
+insert into emp(ename,sal) values('choi', 5000);
+insert into emp(empno,ename,sal) values(7779,'park',5000);
+
+-- 테이블복사
+-- 예제1) emp테이블 담당업무가 manager인 사원들로 emp2 테이블을 만들어라
+create table emp2
+as
+select empno, ename, job, sal from emp
+where job = 'manager';
+show tables;
+desc emp2;
+select* from emp2;
+-- 예제2) emp테이블 레코드중 급여가 3000이상인 사원을 emp2에 추가해라
+-- emp테이블 급여가 3000 이상인 사원.
+select* from emp where sal >= 3000;
+-- insert into + select
+insert into emp2(empno,ename,job,sal)
+select empno,ename,job,sal from emp where sal >= 3000;
+
+-- UPDATE문: 테이블 안의 데이터를 수정하라
+-- UPDATE 테이블이름 set 필드1 = 값, 필드2 = 값, ··· where 조건;
+select* from emp2;
+-- 예제2) park 사원의 job을 바꿔라
+-- update emp2 set job = '인산부'; //모든사원의 job이 인사부로 변경됨
+update emp2 set job = '인사부' where empno = 7779; -- 에러발생, 문장은 맞음, 워크벤치의 문제, 카페 참고할것.
+-- 예제3) ford 사원의 job을 기획부로 급여를 1000을 인상하라.
+update emp2 set job = '기획부', sal = sal +1000 where ename = 'ford';
+-- 예제4) emp2의 모든 사원의 급여 10% 이상해라.
+update emp2 set sal = sal*1.1;
+
+-- DELETE문: 사용하지 않는 데이터를 삭제 합니다. //보통 중복값이 없는 기본키를...
+-- DELETE from 테이블이름 where 조건;
+select*from emp2;
+-- 예제5) 7779번사원을 삭제해라
+delete from emp2 where empno = 7779;
+-- 예제6) 총무부를 삭제하라
+delete from emp2 where job = '총무부';
+
+-- 커밋: 워크벤치 작업이 바로 db(?)에 반영됨.
+-- 현재 오토커밋 상태확인
+select @@autocommit;
+-- 1: 자동커밋 0: 해지
+set autocommit = 0;
+select* from emp order by ename asc;
+
+select*from emp order by empno;
+-- 사원등록
+insert into emp(empno,ename) values(1111,'lee');
+delete from emp where empno = 7369;
+delete from emp where ename = 'park';
+
+-- commit문: 변경내용 반영
+-- 59행 ~ 61행의 변경내용 반영.
+commit;
+-- rollback문: 작업을 취소함. 
+-- 68행의 변경내용 취소.
+delete from emp where ename = 'lee';
+rollback;
+
+select*from emp order by empno;
+-- savepoint문
+savepoint a;
+insert into emp(empno,ename) values(2222, 'aaaa');
+insert into emp(empno,ename) values(3333, 'bbbb');
+
+savepoint b;
+delete from emp where empno = 1111;
+delete from emp where job = 'salesman';
+
+savepoint c;
+update emp set comm = 5000;
+
+-- 74행이후의 모든 변경작업을 취소한다.
+rollback to savepoint a;
+
+-- 78행이후의 모든 변경작업을 취소.
+rollback to savepoint b;
+
+rollback;
+
+-- 이클립스에서 데이터삽입함. 데이터삭제함.
+select* from emp;
